@@ -53,8 +53,8 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: latest
       run: |
-        docker build -t $ECR_REGISTRY/905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:$IMAGE_TAG
+        docker build -t $ECR_REGISTRY/${{ secrets.ECR_URL }}:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/${{ secrets.ECR_URL }}:$IMAGE_TAG
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
@@ -63,7 +63,7 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          docker pull $ECR_REGISTRY/905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:$IMAGE_TAG
+          docker pull $ECR_REGISTRY/${{ secrets.ECR_URL }}:$IMAGE_TAG
           docker stop tu-aplicacion || true
           docker rm tu-aplicacion || true
           docker run -d --name tu-aplicacion \
@@ -73,7 +73,7 @@ jobs:
             -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
             -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            $ECR_REGISTRY/905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:$IMAGE_TAG
+            $ECR_REGISTRY/${{ secrets.ECR_URL }}:$IMAGE_TAG
 
     # - name: Deploy to EC2
     #   uses: appleboy/ssh-action@master
@@ -82,7 +82,7 @@ jobs:
     #     username: ${{ secrets.EC2_USERNAME }}
     #     key: ${{ secrets.EC2_SSH_KEY }}
     #     script: |
-    #       docker pull 905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:latest
+    #       docker pull ${{ secrets.ECR_URL }}:latest
     #       docker stop kitchen-service || true
     #       docker rm kitchen-service || true
-    #       docker run -d --name kitchen-service 905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:latest
+    #       docker run -d --name kitchen-service ${{ secrets.ECR_URL }}:latest
