@@ -56,7 +56,6 @@ jobs:
         php artisan config:clear
         php artisan migrate
 
-    # 905418450006.dkr.ecr.us-east-2.amazonaws.com/alegra:latest
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
