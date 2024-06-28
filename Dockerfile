@@ -28,4 +28,5 @@ USER www-data
 WORKDIR /var/www/html/
 COPY --chown=www-data:www-data . .
 RUN composer install --ignore-platform-reqs
+RUN php artisan key:generate
 EXPOSE 80
