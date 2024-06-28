@@ -73,15 +73,4 @@ jobs:
             -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             ${{ secrets.ECR_URL }}:latest
-
-    # - name: Deploy to EC2
-    #   uses: appleboy/ssh-action@master
-    #   with:
-    #     host: ${{ secrets.EC2_HOST }}
-    #     username: ${{ secrets.EC2_USERNAME }}
-    #     key: ${{ secrets.EC2_SSH_KEY }}
-    #     script: |
-    #       docker pull ${{ secrets.ECR_URL }}:latest
-    #       docker stop kitchen-service || true
-    #       docker rm kitchen-service || true
-    #       docker run -d --name kitchen-service ${{ secrets.ECR_URL }}:latest
+          docker-compose exec kitchen-service php artisan key:generate
