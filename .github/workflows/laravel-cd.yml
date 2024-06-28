@@ -61,10 +61,11 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 905418450006.dkr.ecr.us-east-2.amazonaws.com
           docker pull ${{ secrets.ECR_URL }}:latest
           docker stop kitchen-service || true
           docker rm kitchen-service || true
-          docker run -d --name kitchen-service \
+          docker run -p 80:80 -d --name kitchen-service \
             -e DB_CONNECTION=${{ secrets.DB_CONNECTION }} \
             -e DB_HOST=${{ secrets.DB_HOST }} \
             -e DB_PORT=${{ secrets.DB_PORT }} \
