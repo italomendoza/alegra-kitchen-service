@@ -1,13 +1,12 @@
 <?php
-
 namespace Database\Factories;
 
-use App\Models\Recipe;
+use App\Models\Ingredient;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class RecipeFactory extends Factory
+class IngredientFactory extends Factory
 {
-    protected $model = Recipe::class;
+    protected $model = Ingredient::class;
 
     public function definition()
     {

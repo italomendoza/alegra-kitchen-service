@@ -28,4 +28,4 @@ USER www-data
 WORKDIR /var/www/html/
 COPY --chown=www-data:www-data . .
 RUN composer install --ignore-platform-reqs
-
+EXPOSE 80

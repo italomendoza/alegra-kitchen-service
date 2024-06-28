@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Recipe;
 use App\Models\Order;
+use App\Models\Ingredient;
 use Illuminate\Support\Facades\Http;
 
 class KitchenControllerTest extends TestCase
@@ -14,10 +15,13 @@ class KitchenControllerTest extends TestCase
 
     public function test_prepare_dish_success()
     {
+        $ingredient1 = Ingredient::factory()->create();
+        $ingredient2 = Ingredient::factory()->create();
+
         $recipe = Recipe::factory()->create();
         $recipe->ingredients()->attach([
-            1 => ['quantity' => 2],
-            2 => ['quantity' => 3]
+            $ingredient1->id => ['quantity' => 2],
+            $ingredient2->id => ['quantity' => 3]
         ]);
 
         Http::fake([
@@ -32,7 +36,7 @@ class KitchenControllerTest extends TestCase
                      'message' => 'Dish prepared successfully',
                  ]);
 
-        // check status order
+        // Verifica el estado del pedido
         $this->assertDatabaseHas('orders', [
             'status' => 'completed',
             'dish_name' => $recipe->name
@@ -41,10 +45,14 @@ class KitchenControllerTest extends TestCase
 
     public function test_prepare_dish_ingredients_not_available()
     {
+        // create ingredient
+        $ingredient1 = Ingredient::factory()->create();
+        $ingredient2 = Ingredient::factory()->create();
+
         $recipe = Recipe::factory()->create();
         $recipe->ingredients()->attach([
-            1 => ['quantity' => 2],
-            2 => ['quantity' => 3]
+            $ingredient1->id => ['quantity' => 2],
+            $ingredient2->id => ['quantity' => 3]
         ]);
 
         Http::fake([

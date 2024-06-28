@@ -16,7 +16,7 @@ class KitchenController extends Controller
         $order = new Order();
 
 
-        // choise random recipe
+        // Seleccionar una receta aleatoria
         $recipe = Recipe::inRandomOrder()->first();
         // $recipe = Recipe::where('id', 1)->first();
         $order->dish_name = $recipe->name;
@@ -101,31 +101,42 @@ class KitchenController extends Controller
 
     public function inProgress()
     {
-        // get all orders in preparation
+        // Obtener pedidos en preparación
         $orders = Order::where('status', 'in preparation')->get();
         return response()->json($orders);
     }
 
+    public function history()
+    {
+        // Obtener historial de pedidos
+        $orders = Order::all();
+        return response()->json($orders);
+    }
+
+    
 
     public function getOrdersInPreparation()
     {
-        // get all orders in preparation
+        // Obtener todas las órdenes que están en preparación
         $ordersInPreparation = Order::where('status', 'pending')->get();
 
+        // Devolver las órdenes en un formato JSON
         return response()->json($ordersInPreparation);
     }
     public function getOrderHistory()
     {
-        // get all orders
+        // Obtener todo el historial de pedidos
         $orderHistory = Order::with('recipe')->get();
 
+        // Devolver el historial de pedidos en un formato JSON
         return response()->json($orderHistory);
     }
     public function getRecipes()
     {
-        // get all recipes
+        // Obtener todas las recetas con sus ingredientes
         $recipes = Recipe::with('ingredients')->get();
 
+        // Devolver las recetas en un formato JSON
         return response()->json($recipes);
     }
 }
