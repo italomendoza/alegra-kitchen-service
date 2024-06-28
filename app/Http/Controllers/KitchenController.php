@@ -61,14 +61,14 @@ class KitchenController extends Controller
             ];
         }
 
-        $response = Http::post('http://warehouse-service/api/ingredients/check', [
+        $response = Http::post('https://api-warehouse.oloi.dev/api/ingredients/check', [
             'ingredients' => $ingredientsToCheck
         ]);
 
         if ($response->failed() || $response->json()['available'] == false) {
             $allIngredientsAvailable = false;
         } else {
-            Http::post('http://warehouse-service/api/ingredients/decrement', [
+            Http::post('https://api-warehouse.oloi.dev/api/ingredients/decrement', [
                 'ingredients' => $ingredientsToCheck
             ]);
         }
@@ -113,7 +113,7 @@ class KitchenController extends Controller
         return response()->json($orders);
     }
 
-    
+
 
     public function getOrdersInPreparation()
     {
