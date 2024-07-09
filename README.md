@@ -16,6 +16,10 @@ El microservicio `kitchen` se encarga de gestionar las órdenes y recetas. Inter
 ## CONTRUCCION DEL SISTEMA
 - crea una carpeta general y dentro de ella clona los 3 repositorios 2 backends de microservicios (kitchen y warehouse) y 1 del frontend con vue js.
 - luego usa este composer:
+
+## Docker Compose Configuration
+
+```yaml
 version: '3.8'
 
 services:
@@ -111,17 +115,16 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
-      - RABBITMQ_DEFAULT_VHOST= /
+      - RABBITMQ_DEFAULT_VHOST=/
 
 networks:
   app_network:
     driver: bridge
 
 volumes:
-  restaurant_db_data:
   kitchen_db_data:
   warehouse_db_data:
-  market_db_data:
+```
 
 ## Uso de Docker
 - Construye y levanta los contenedores:
