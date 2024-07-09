@@ -5,6 +5,8 @@ El microservicio `kitchen` se encarga de gestionar las órdenes y recetas. Inter
 
 ## Diagrama de arquitectura en aws
 - https://lucid.app/lucidchart/966c3239-3d04-4339-a634-1e8744124fde/edit?viewport_loc=-1560%2C-734%2C2781%2C1558%2C0_0&invitationId=inv_a8695cc3-978c-401c-952a-07a3a12262ac
+  ![Reto Alegra Cloud Architecture](https://github.com/italomendoza/alegra-kitchen-service/assets/56613885/6845ab74-3432-44a7-bf39-1a12e9420e30)
+
 
 ## Requisitos Previos
 - Docker
