@@ -2,101 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Recipe;
 use App\Models\Order;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
+use App\Services\OrderService;
 use Illuminate\Support\Facades\Log;
 
 class KitchenController extends Controller
 {
-    public function prepareDish(Request $request)
+    protected $orderService;
+
+    public function __construct(OrderService $orderService)
     {
-        $order = new Order();
+        $this->orderService = $orderService;
+    }
 
+    public function prepareDish()
+    {
+        try {
+            $order = new Order();
 
-        // Seleccionar una receta aleatoria
-        $recipe = Recipe::inRandomOrder()->first();
-        // $recipe = Recipe::where('id', 1)->first();
-        $order->dish_name = $recipe->name;
-        $order->status = 'pending';
-        $order->save();
-        $orderId = $order->id;
-        if (!$recipe) {
-            return response()->json(['message' => 'No recipes available'], 404);
-        }
+            // Seleccionar una receta aleatoria
+            // $recipe = Recipe::inRandomOrder()->first();
+            $recipe = Recipe::where('id', '=', '1')->first();
 
-        $order->recipe_id = $recipe->id;
-        $order->save();
+            if (!$recipe) {
+                return response()->json(['message' => 'No recipes available'], 404);
+            }
 
-        $allIngredientsAvailable = $this->checkAndDecrementIngredients($recipe);
-
-        if ($allIngredientsAvailable) {
-            $order->status = 'completed';
             $order->dish_name = $recipe->name;
+            $order->status = 'pending';
+            $order->recipe_id = $recipe->id;
             $order->save();
 
-            return response()->json(['message' => 'Dish prepared successfully']);
-        } else {
-            $order->status = 'pending';
-            $order->save();
+            // Preparar los ingredientes para enviar
+            // Enviar mensaje a RabbitMQ
+            $this->orderService->prepareIngredients($recipe, $order);
 
             return response()->json([
-                'message' => 'Ingredients not available, order is pending',
-                'order_id' => $orderId,
+                'message' => 'Order received and is being processed',
+                'order_id' => $order->id,
             ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error preparing dish: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to process the order, please contact the restaurant administrator'], 500);
         }
-    }
-
-    private function checkAndDecrementIngredients($recipe)
-    {
-        $allIngredientsAvailable = true;
-        $ingredientsToCheck = [];
-
-        foreach ($recipe->ingredients as $ingredient) {
-            $ingredientsToCheck[] = [
-                'ingredient_name' => $ingredient->name,
-                'quantity' => $ingredient->pivot->quantity
-            ];
-        }
-
-        $response = Http::post('https://api-warehouse.oloi.dev/api/ingredients/check', [
-            'ingredients' => $ingredientsToCheck
-        ]);
-
-        if ($response->failed() || $response->json()['available'] == false) {
-            $allIngredientsAvailable = false;
-        } else {
-            Http::post('https://api-warehouse.oloi.dev/api/ingredients/decrement', [
-                'ingredients' => $ingredientsToCheck
-            ]);
-        }
-
-        return $allIngredientsAvailable;
-    }
-
-
-
-    public function retryPendingOrders()
-    {
-        $pendingOrders = Order::where('status', 'pending')->get();
-
-        foreach ($pendingOrders as $order) {
-            $recipe = Recipe::find($order->recipe_id);
-
-            if ($recipe) {
-                $allIngredientsAvailable = $this->checkAndDecrementIngredients($recipe);
-
-                if ($allIngredientsAvailable) {
-                    $order->status = 'completed';
-                    $order->dish_name = $recipe->name;
-                    $order->save();
-                }
-            }
-        }
-
-        return response()->json(['message' => 'Retried pending orders']);
     }
 
     public function inProgress()
@@ -113,8 +63,6 @@ class KitchenController extends Controller
         return response()->json($orders);
     }
 
-
-
     public function getOrdersInPreparation()
     {
         // Obtener todas las órdenes que están en preparación
@@ -123,6 +71,7 @@ class KitchenController extends Controller
         // Devolver las órdenes en un formato JSON
         return response()->json($ordersInPreparation);
     }
+
     public function getOrderHistory()
     {
         // Obtener todo el historial de pedidos
@@ -131,6 +80,7 @@ class KitchenController extends Controller
         // Devolver el historial de pedidos en un formato JSON
         return response()->json($orderHistory);
     }
+
     public function getRecipes()
     {
         // Obtener todas las recetas con sus ingredientes
@@ -138,5 +88,17 @@ class KitchenController extends Controller
 
         // Devolver las recetas en un formato JSON
         return response()->json($recipes);
+    }
+
+    private function prepareIngredients($recipe)
+    {
+        $ingredients = [];
+        foreach ($recipe->ingredients as $ingredient) {
+            $ingredients[] = [
+                'ingredient_name' => $ingredient->name,
+                'quantity' => $ingredient->pivot->quantity
+            ];
+        }
+        return $ingredients;
     }
 }
